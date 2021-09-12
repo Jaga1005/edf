@@ -14,18 +14,14 @@ public class FileHelper {
     private FileHelper() {
     }
 
-    public static String makeResourceKey(String userName, String filename) {
-        return filename.hashCode() + "" + userName.hashCode();
-    }
-
-    public static File saveNewResource(MultipartFile file, String userName, String resourcePath, String filename) throws IOException {
-        File newFile = createFileForNewResource(userName, resourcePath, filename);
+    public static String copyResource(MultipartFile file, String userName, String resourcePath, String filename) throws IOException {
+        File newFile = createFileForResource(userName, resourcePath, filename);
         file.transferTo(newFile);
-        return newFile;
+        return newFile.getPath();
     }
 
-    private static File createFileForNewResource(String userName, String resourcePath, String filename) throws IOException {
-        File newFile = new File(resourcePath + userName + "\\" + filename);
+    private static File createFileForResource(String userName, String resourcePath, String filename) throws IOException {
+        File newFile = new File(String.format("%s%s\\%s", resourcePath, userName, filename));
         newFile.getParentFile().mkdirs();
         newFile.createNewFile();
         return newFile;
