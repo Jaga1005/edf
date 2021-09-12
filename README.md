@@ -39,3 +39,18 @@ The REST API is described below.
     OK - file added
    
     ALREADY_ADDED - file for the sended user name and the filename already exists in application
+
+
+## Delete file
+
+### Request
+
+`DELETE /delete/?username=USERNAME&filename=FILENAME.STH`
+
+eg. http://localhost:8083/delete?username=test&filename=video.mp4
+
+### Response
+
+    OK - file deleted
+   
+    NOT_EXISTS - file for the sended user name and the filename doesn't exist in application

@@ -6,11 +6,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
-import static com.edf.FileHelper.*;
+import static com.edf.FileHelper.copyResource;
+import static com.edf.FileHelper.getResource;
 
 @Service
 public class FileService {
@@ -20,6 +24,7 @@ public class FileService {
     @Autowired
     ResourceRepository resourceRepository;
 
+    @Transactional(readOnly = true)
     public Resource download(String filename, String userName) throws IOException {
         String path = resourceRepository.getDirectoryByUserNameAndFilename(userName, filename);
 
@@ -30,6 +35,7 @@ public class FileService {
         return getResource(path);
     }
 
+    @Transactional
     public String upload(MultipartFile file, String userName) throws IOException {
         String filename = file.getOriginalFilename();
 
@@ -45,5 +51,20 @@ public class FileService {
 
     String copyToNewFile(MultipartFile file, String userName, String filename) throws IOException {
         return copyResource(file, userName, storagePath, filename);
+    }
+
+    @Transactional()
+    public String deleteFile(String filename, String username) throws IOException {
+        if (resourceRepository.existsByUserNameAndFilename(username, filename)) {
+            boolean deleted = deleteResourceFromStorage(filename, username);
+            resourceRepository.deleteByUserNameAndFilename(username, filename);
+            return deleted ? "OK" : "Something goes wrong";
+        }
+        return "NOT_EXISTS";
+    }
+
+    private boolean deleteResourceFromStorage(String filename, String username) throws IOException {
+        String path = resourceRepository.getDirectoryByUserNameAndFilename(username, filename);
+        return Files.deleteIfExists(Paths.get(path));
     }
 }
